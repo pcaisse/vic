@@ -1,5 +1,3 @@
-## vi clone in C
+## vi clone
 
-A learning project to build a vi clone in C.
-
-Based off of [Build Your Own Text Editor](https://viewsourcecode.org/snaptoken/kilo/).
+A learning project to build a vi clone in Rust.
