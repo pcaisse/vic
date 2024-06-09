@@ -13,6 +13,7 @@ use std::io::{stdout, Result};
 enum Mode {
     Normal,
     Insert,
+    CommandLine
 }
 
 fn main() -> Result<()> {
@@ -22,6 +23,7 @@ fn main() -> Result<()> {
     terminal.clear()?;
 
     let mut buffer = String::new();
+    let mut command = String::new();
     let mut mode = Mode::Normal;
 
     loop {
@@ -37,17 +39,30 @@ fn main() -> Result<()> {
         })?;
         if event::poll(std::time::Duration::from_millis(16))? {
             if let Event::Key(KeyEvent { code, .. }) = event::read()? {
-                match (mode.clone(), code) {
-                    (Mode::Normal, KeyCode::Esc) => {
+                match (mode.clone(), code, command.as_str()) {
+                    // Enter into command mode
+                    (Mode::Normal, KeyCode::Char(':'), _) => {
+                        command = String::new();
+                        mode = Mode::CommandLine;
+                    }
+                    // Enter into insert mode
+                    (Mode::Normal, KeyCode::Char('i'), _) => {
+                        mode = Mode::Insert;
+                    }
+                    // Add to current command
+                    (Mode::CommandLine, KeyCode::Char(c), _) => {
+                        command.push(c);
+                    }
+                    // Quit
+                    (Mode::CommandLine, KeyCode::Enter, "q") => {
                         break;
                     }
-                    (Mode::Normal, KeyCode::Char('i')) => {
-                        mode = Mode::Insert
+                    // Exit insert or command line mode
+                    (Mode::Insert | Mode::CommandLine, KeyCode::Esc, _) => {
+                        mode = Mode::Normal;
                     }
-                    (Mode::Insert, KeyCode::Esc) => {
-                        mode = Mode::Normal
-                    }
-                    (Mode::Insert, KeyCode::Char(c)) => {
+                    // Append to text buffer
+                    (Mode::Insert, KeyCode::Char(c), _) => {
                         buffer.push(c);
                     }
                     _ => {}
