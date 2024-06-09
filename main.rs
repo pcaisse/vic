@@ -4,8 +4,8 @@ use crossterm::{
     ExecutableCommand,
 };
 use ratatui::{
-    prelude::{CrosstermBackend, Stylize, Terminal},
-    widgets::Paragraph,
+    prelude::{Constraint, CrosstermBackend, Direction, Layout, Stylize, Terminal},
+    widgets::{Block, Borders, Paragraph},
 };
 use std::io::{stdout, Result};
 
@@ -13,7 +13,7 @@ use std::io::{stdout, Result};
 enum Mode {
     Normal,
     Insert,
-    CommandLine
+    CommandLine,
 }
 
 fn main() -> Result<()> {
@@ -30,12 +30,28 @@ fn main() -> Result<()> {
         // Draw text buffer
         terminal.draw(|frame| {
             let area = frame.size();
-            frame.render_widget(
-                Paragraph::new(buffer.clone())
-                    .white()
-                    .on_black(),
-                area,
-            );
+
+            match mode.clone() {
+                Mode::CommandLine => {
+                    let layout = Layout::default()
+                        .direction(Direction::Vertical)
+                        .constraints(vec![Constraint::Percentage(100), Constraint::Min(2)])
+                        .split(area);
+                    frame.render_widget(
+                        Paragraph::new(buffer.clone()).white().on_black(),
+                        layout[0],
+                    );
+                    frame.render_widget(
+                        Paragraph::new([":", command.clone().as_str()].join(""))
+                            .white()
+                            .block(Block::new().borders(Borders::TOP)),
+                        layout[1],
+                    );
+                }
+                _ => {
+                    frame.render_widget(Paragraph::new(buffer.clone()).white().on_black(), area);
+                }
+            }
         })?;
         if event::poll(std::time::Duration::from_millis(16))? {
             if let Event::Key(KeyEvent { code, .. }) = event::read()? {
