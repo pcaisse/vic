@@ -9,19 +9,27 @@ use ratatui::{
 };
 use std::io::{stdout, Result};
 
+#[derive(Copy, Clone)]
+enum Mode {
+    Normal,
+    Insert,
+}
+
 fn main() -> Result<()> {
     stdout().execute(EnterAlternateScreen)?;
     enable_raw_mode()?;
     let mut terminal = Terminal::new(CrosstermBackend::new(stdout()))?;
     terminal.clear()?;
 
-    let mut input = String::new();
+    let mut buffer = String::new();
+    let mut mode = Mode::Normal;
 
     loop {
+        // Draw text buffer
         terminal.draw(|frame| {
             let area = frame.size();
             frame.render_widget(
-                Paragraph::new(input.clone())
+                Paragraph::new(buffer.clone())
                     .white()
                     .on_black(),
                 area,
@@ -29,12 +37,18 @@ fn main() -> Result<()> {
         })?;
         if event::poll(std::time::Duration::from_millis(16))? {
             if let Event::Key(KeyEvent { code, .. }) = event::read()? {
-                match code {
-                    KeyCode::Esc => {
+                match (mode.clone(), code) {
+                    (Mode::Normal, KeyCode::Esc) => {
                         break;
                     }
-                    KeyCode::Char(c) => {
-                        input.push(c);
+                    (Mode::Normal, KeyCode::Char('i')) => {
+                        mode = Mode::Insert
+                    }
+                    (Mode::Insert, KeyCode::Esc) => {
+                        mode = Mode::Normal
+                    }
+                    (Mode::Insert, KeyCode::Char(c)) => {
+                        buffer.push(c);
                     }
                     _ => {}
                 }
