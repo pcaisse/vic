@@ -9,11 +9,11 @@ use ratatui::{
 };
 use std::io::{stdout, Result};
 
-#[derive(Copy, Clone)]
+#[derive(Clone)]
 enum Mode {
     Normal,
     Insert,
-    CommandLine,
+    CommandLine { command: String },
 }
 
 fn main() -> Result<()> {
@@ -23,7 +23,6 @@ fn main() -> Result<()> {
     terminal.clear()?;
 
     let mut buffer = String::new();
-    let mut command = String::new();
     let mut mode = Mode::Normal;
 
     loop {
@@ -32,7 +31,7 @@ fn main() -> Result<()> {
             let area = frame.size();
 
             match mode.clone() {
-                Mode::CommandLine => {
+                Mode::CommandLine { command } => {
                     let layout = Layout::default()
                         .direction(Direction::Vertical)
                         .constraints(vec![Constraint::Percentage(100), Constraint::Min(2)])
@@ -55,30 +54,34 @@ fn main() -> Result<()> {
         })?;
         if event::poll(std::time::Duration::from_millis(16))? {
             if let Event::Key(KeyEvent { code, .. }) = event::read()? {
-                match (mode.clone(), code, command.as_str()) {
+                match (mode.clone(), code) {
                     // Enter into command mode
-                    (Mode::Normal, KeyCode::Char(':'), _) => {
-                        command = String::new();
-                        mode = Mode::CommandLine;
+                    (Mode::Normal, KeyCode::Char(':')) => {
+                        mode = Mode::CommandLine {
+                            command: String::new(),
+                        };
                     }
                     // Enter into insert mode
-                    (Mode::Normal, KeyCode::Char('i'), _) => {
+                    (Mode::Normal, KeyCode::Char('i')) => {
                         mode = Mode::Insert;
                     }
                     // Add to current command
-                    (Mode::CommandLine, KeyCode::Char(c), _) => {
+                    (Mode::CommandLine { mut command }, KeyCode::Char(c)) => {
                         command.push(c);
+                        mode = Mode::CommandLine { command };
                     }
                     // Quit
-                    (Mode::CommandLine, KeyCode::Enter, "q") => {
-                        break;
+                    (Mode::CommandLine { command }, KeyCode::Enter) => {
+                        if command == "q" {
+                            break;
+                        }
                     }
                     // Exit insert or command line mode
-                    (Mode::Insert | Mode::CommandLine, KeyCode::Esc, _) => {
+                    (Mode::Insert | Mode::CommandLine { .. }, KeyCode::Esc) => {
                         mode = Mode::Normal;
                     }
                     // Append to text buffer
-                    (Mode::Insert, KeyCode::Char(c), _) => {
+                    (Mode::Insert, KeyCode::Char(c)) => {
                         buffer.push(c);
                     }
                     _ => {}
