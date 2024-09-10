@@ -17,10 +17,6 @@ enum Op {
     PushToBuffer { char: char },
 }
 
-enum Signal {
-    Exit,
-}
-
 fn next_op(mode: Mode, code: KeyCode) -> Result<Op, &'static str> {
     match (mode.clone(), code) {
         // Enter into command mode
@@ -47,34 +43,6 @@ fn next_op(mode: Mode, code: KeyCode) -> Result<Op, &'static str> {
     }
 }
 
-fn eval_op(
-    op: Result<Op, &'static str>,
-    buffer: String,
-) -> Result<(Option<Mode>, Option<String>, Option<Signal>), &'static str> {
-    // TODO: Make return type be changes only? (mode changes, buffer changes, new signals)
-    match op {
-        Ok(Op::EnterCommandMode) => Ok((
-            Some(Mode::CommandLine {
-                command: String::new(),
-            }),
-            None,
-            None,
-        )),
-        Ok(Op::EnterInsertMode) => Ok((Some(Mode::Insert), None, None)),
-        Ok(Op::EnterNormalMode) => Ok((Some(Mode::Normal), None, None)),
-        Ok(Op::Quit) => Ok((None, None, Some(Signal::Exit))),
-        Ok(Op::PushToCommand { command, char }) => Ok((
-            Some(Mode::CommandLine {
-                command: format!("{command}{char}"),
-            }),
-            None,
-            None,
-        )),
-        Ok(Op::PushToBuffer { char }) => Ok((None, Some(format!("{buffer}{char}")), None)),
-        Err(msg) => Err(msg),
-    }
-}
-
 pub struct EditorState {
     pub mode: Mode,
     pub buffer: String,
@@ -83,24 +51,21 @@ pub struct EditorState {
 
 impl EditorState {
     pub fn update(&mut self, code: KeyCode) -> &mut EditorState {
-        let op = next_op(self.mode.clone(), code);
-        match eval_op(op, self.buffer.clone()) {
-            Ok((Some(new_mode), Some(new_buffer), None)) => {
-                self.mode = new_mode;
-                self.buffer = new_buffer;
+        match next_op(self.mode.clone(), code) {
+            Ok(Op::EnterCommandMode) => {
+                self.mode = Mode::CommandLine {
+                    command: String::new(),
+                }
             }
-            Ok((Some(new_mode), None, None)) => {
-                self.mode = new_mode;
+            Ok(Op::EnterInsertMode) => self.mode = Mode::Insert,
+            Ok(Op::EnterNormalMode) => self.mode = Mode::Normal,
+            Ok(Op::Quit) => self.quit = true,
+            Ok(Op::PushToCommand { command, char }) => {
+                self.mode = Mode::CommandLine {
+                    command: format!("{command}{char}"),
+                }
             }
-            Ok((None, Some(new_buffer), None)) => {
-                self.buffer = new_buffer;
-            }
-            Ok((_, _, Some(Signal::Exit))) => {
-                self.quit = true;
-            }
-            Ok(_) => {
-                // TODO: Figure out if this should be possible
-            }
+            Ok(Op::PushToBuffer { char }) => self.buffer.push(char),
             Err(_msg) => {
                 // TODO: Display error message
             }
