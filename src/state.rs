@@ -79,7 +79,7 @@ impl Default for EditorState {
         EditorState {
             mode: Mode::Normal,
             buffer: String::new(),
-            quit: false
+            quit: false,
         }
     }
 }

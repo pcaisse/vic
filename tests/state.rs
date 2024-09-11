@@ -27,7 +27,13 @@ fn test_editor_state_insert_text_repeatedly() {
     let mut editor_state = EditorState {
         ..Default::default()
     };
-    for key_code in [KeyCode::Char('i'), KeyCode::Char('a'), KeyCode::Esc, KeyCode::Char('i'), KeyCode::Char('b')] {
+    for key_code in [
+        KeyCode::Char('i'),
+        KeyCode::Char('a'),
+        KeyCode::Esc,
+        KeyCode::Char('i'),
+        KeyCode::Char('b'),
+    ] {
         editor_state.update(key_code);
         ()
     }
