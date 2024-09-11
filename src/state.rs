@@ -1,6 +1,6 @@
 use crossterm::event::KeyCode;
 
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Mode {
     Normal,
     Insert,
@@ -71,5 +71,15 @@ impl EditorState {
             }
         }
         self
+    }
+}
+
+impl Default for EditorState {
+    fn default() -> EditorState {
+        EditorState {
+            mode: Mode::Normal,
+            buffer: String::new(),
+            quit: false
+        }
     }
 }

@@ -12,3 +12,7 @@ ratatui = "0.26.3"
 [[bin]]
 name = "vic"
 path = "src/main.rs"
+
+[lib]
+name = "state"
+path = "src/state.rs"

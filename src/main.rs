@@ -19,9 +19,7 @@ fn main() -> ResultIO<()> {
     terminal.clear()?;
 
     let mut editor_state = EditorState {
-        buffer: String::new(),
-        mode: Mode::Normal,
-        quit: false,
+        ..Default::default()
     };
 
     loop {
