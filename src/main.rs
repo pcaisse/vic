@@ -59,7 +59,7 @@ fn main() -> ResultIO<()> {
         if event::poll(std::time::Duration::from_millis(16))? {
             if let Event::Key(KeyEvent { code, .. }) = event::read()? {
                 editor_state.update(code);
-                if editor_state.quit == true {
+                if editor_state.quit {
                     break;
                 }
             }

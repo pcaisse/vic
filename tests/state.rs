@@ -17,9 +17,8 @@ fn test_editor_state_quit() {
     };
     for key_code in [KeyCode::Char(':'), KeyCode::Char('q'), KeyCode::Enter] {
         editor_state.update(key_code);
-        ()
     }
-    assert_eq!(editor_state.quit, true)
+    assert!(editor_state.quit)
 }
 
 #[test]
@@ -35,7 +34,6 @@ fn test_editor_state_insert_text_repeatedly() {
         KeyCode::Char('b'),
     ] {
         editor_state.update(key_code);
-        ()
     }
     assert_eq!(editor_state.buffer, "ab")
 }
