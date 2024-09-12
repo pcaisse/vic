@@ -9,7 +9,7 @@ use ratatui::{
 };
 use std::io::{stdout, Result as ResultIO};
 
-mod state;
+pub mod state;
 use crate::state::{EditorState, Mode};
 
 fn main() -> ResultIO<()> {
@@ -39,8 +39,7 @@ fn main() -> ResultIO<()> {
                             .on_black(),
                         layout[0],
                     );
-                    let error_option = editor_state.error.clone();
-                    let command_text = match error_option {
+                    let command_text = match editor_state.error.clone() {
                         Some(error) => Paragraph::new(error.to_string()).red(),
                         None => Paragraph::new([":", command.clone().as_str()].join("")).white(),
                     };

@@ -1,5 +1,7 @@
+pub mod error;
+
+use self::error::OpError;
 use crossterm::event::KeyCode;
-use std::fmt;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Mode {
@@ -16,27 +18,6 @@ enum Op {
     // TODO: Make these chars into strings to accomodate eg. copy/pasting
     PushToCommand { command: String, char: char },
     PushToBuffer { char: char },
-}
-
-impl fmt::Display for OpError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            OpError::InvalidCommandError { command } => {
-                let msg = format!("Invalid command: {command}");
-                write!(f, "{msg}")
-            }
-            OpError::UnknownKeyCodeError { code: _code } => {
-                let msg = "Unknown key code";
-                write!(f, "{msg}")
-            }
-        }
-    }
-}
-
-#[derive(Clone)]
-pub enum OpError {
-    InvalidCommandError { command: String },
-    UnknownKeyCodeError { code: KeyCode },
 }
 
 fn next_op(mode: Mode, code: KeyCode) -> Result<Op, OpError> {

@@ -15,4 +15,4 @@ path = "src/main.rs"
 
 [lib]
 name = "state"
-path = "src/state.rs"
+path = "src/state/mod.rs"
