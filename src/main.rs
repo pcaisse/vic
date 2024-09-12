@@ -39,10 +39,13 @@ fn main() -> ResultIO<()> {
                             .on_black(),
                         layout[0],
                     );
+                    let error_option = editor_state.error.clone();
+                    let command_text = match error_option {
+                        Some(error) => Paragraph::new(error.to_string()).red(),
+                        None => Paragraph::new([":", command.clone().as_str()].join("")).white(),
+                    };
                     frame.render_widget(
-                        Paragraph::new([":", command.clone().as_str()].join(""))
-                            .white()
-                            .block(Block::new().borders(Borders::TOP)),
+                        command_text.block(Block::new().borders(Borders::TOP)),
                         layout[1],
                     );
                 }
