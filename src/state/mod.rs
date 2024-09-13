@@ -17,6 +17,7 @@ enum Op {
     Quit,
     // TODO: Make these chars into strings to accomodate eg. copy/pasting
     PushToCommand { command: String, char: char },
+    PopFromCommand { command: String },
     PushToBuffer { char: char },
 }
 
@@ -30,6 +31,8 @@ fn next_op(mode: Mode, code: KeyCode) -> Result<Op, OpError> {
         (Mode::CommandLine { command }, KeyCode::Char(c)) => {
             Ok(Op::PushToCommand { command, char: c })
         }
+        // Delete from current command
+        (Mode::CommandLine { command }, KeyCode::Backspace) => Ok(Op::PopFromCommand { command }),
         // Quit
         (Mode::CommandLine { command }, KeyCode::Enter) => {
             if command == "q" {
@@ -75,6 +78,11 @@ impl EditorState {
                 self.mode = Mode::CommandLine {
                     command: format!("{command}{char}"),
                 };
+                self.error = None;
+            }
+            Ok(Op::PopFromCommand { mut command }) => {
+                command.pop();
+                self.mode = Mode::CommandLine { command };
                 self.error = None;
             }
             Ok(Op::PushToBuffer { char }) => self.buffer.push(char),
