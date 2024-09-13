@@ -46,9 +46,12 @@ fn main() -> ResultIO<()> {
                     .on_black(),
                 layout[0],
             );
-            // TODO: Display mode
             frame.render_widget(
-                msg_text.block(Block::new().borders(Borders::TOP)),
+                msg_text.block(
+                    Block::new()
+                        .borders(Borders::TOP)
+                        .title(editor_state.mode.clone().to_string()),
+                ),
                 layout[1],
             );
         })?;
