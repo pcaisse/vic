@@ -1,14 +1,9 @@
 pub mod error;
+pub mod mode;
 
 use self::error::OpError;
+use self::mode::Mode;
 use crossterm::event::KeyCode;
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum Mode {
-    Normal,
-    Insert,
-    CommandLine { command: String },
-}
 
 enum Op {
     EnterCommandMode,

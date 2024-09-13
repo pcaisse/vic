@@ -1,5 +1,6 @@
 use crossterm::event::KeyCode;
-use state::{EditorState, Mode};
+use state::mode::Mode;
+use state::EditorState;
 
 #[test]
 fn test_editor_state_switch_to_insert_mode() {
