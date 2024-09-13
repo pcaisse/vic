@@ -78,7 +78,10 @@ impl EditorState {
                 self.error = None;
             }
             Ok(Op::PushToBuffer { char }) => self.buffer.push(char),
-            Err(error) => self.error = Some(error),
+            Err(error) => {
+                self.error = Some(error);
+                self.mode = Mode::Normal;
+            }
         }
         self
     }
