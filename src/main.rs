@@ -41,7 +41,7 @@ fn main() -> ResultIO<()> {
                 .constraints(vec![Constraint::Percentage(100), Constraint::Min(2)])
                 .split(area);
             frame.render_widget(
-                Paragraph::new(Text::raw(&editor_state.buffer))
+                Paragraph::new(Text::raw(&editor_state.buffer.text))
                     .white()
                     .on_black(),
                 layout[0],

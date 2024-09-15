@@ -36,7 +36,7 @@ fn test_editor_state_insert_text_repeatedly() {
     ] {
         editor_state.update(key_code);
     }
-    assert_eq!(editor_state.buffer, "ab")
+    assert_eq!(editor_state.buffer.text, "ab")
 }
 
 #[test]

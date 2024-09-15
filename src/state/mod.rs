@@ -1,6 +1,8 @@
+mod buffer;
 pub mod error;
 pub mod mode;
 
+use self::buffer::Buffer;
 use self::error::OpError;
 use self::mode::Mode;
 use crossterm::event::KeyCode;
@@ -51,7 +53,9 @@ fn next_op(mode: &Mode, code: KeyCode) -> Result<Op, OpError> {
 
 pub struct EditorState {
     pub mode: Mode,
-    pub buffer: String,
+    pub buffer: Buffer,
+    // TODO: save buffer to file on :w command
+    // TODO: load file contents into buffer when editor loads
     pub quit: bool,
     pub error: Option<OpError>,
 }
@@ -84,7 +88,7 @@ impl EditorState {
                 self.mode = Mode::CommandLine { command };
                 self.error = None;
             }
-            Ok(Op::PushToBuffer { char }) => self.buffer.push(char),
+            Ok(Op::PushToBuffer { char }) => self.buffer.text.push(char),
             Err(error) => {
                 self.error = Some(error);
                 self.mode = Mode::Normal;
@@ -98,7 +102,9 @@ impl Default for EditorState {
     fn default() -> EditorState {
         EditorState {
             mode: Mode::Normal,
-            buffer: String::new(),
+            buffer: Buffer {
+                ..Default::default()
+            },
             quit: false,
             error: None,
         }
