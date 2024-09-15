@@ -16,24 +16,29 @@ enum Op {
     PushToBuffer { char: char },
 }
 
-fn next_op(mode: Mode, code: KeyCode) -> Result<Op, OpError> {
-    match (mode.clone(), code) {
+fn next_op(mode: &Mode, code: KeyCode) -> Result<Op, OpError> {
+    match (mode, code) {
         // Enter into command mode
         (Mode::Normal, KeyCode::Char(':')) => Ok(Op::EnterCommandMode),
         // Enter into insert mode
         (Mode::Normal, KeyCode::Char('i')) => Ok(Op::EnterInsertMode),
         // Add to current command
-        (Mode::CommandLine { command }, KeyCode::Char(c)) => {
-            Ok(Op::PushToCommand { command, char: c })
-        }
+        (Mode::CommandLine { command }, KeyCode::Char(c)) => Ok(Op::PushToCommand {
+            command: command.to_owned(),
+            char: c,
+        }),
         // Delete from current command
-        (Mode::CommandLine { command }, KeyCode::Backspace) => Ok(Op::PopFromCommand { command }),
+        (Mode::CommandLine { command }, KeyCode::Backspace) => Ok(Op::PopFromCommand {
+            command: command.to_owned(),
+        }),
         // Quit
         (Mode::CommandLine { command }, KeyCode::Enter) => {
             if command == "q" {
                 Ok(Op::Quit)
             } else {
-                Err(OpError::InvalidCommandError { command })
+                Err(OpError::InvalidCommandError {
+                    command: command.to_owned(),
+                })
             }
         }
         // Exit insert or command line mode
@@ -53,7 +58,7 @@ pub struct EditorState {
 
 impl EditorState {
     pub fn update(&mut self, code: KeyCode) -> &mut EditorState {
-        match next_op(self.mode.clone(), code) {
+        match next_op(&self.mode, code) {
             Ok(Op::EnterCommandMode) => {
                 self.mode = Mode::CommandLine {
                     command: String::new(),
@@ -69,10 +74,9 @@ impl EditorState {
                 self.error = None;
             }
             Ok(Op::Quit) => self.quit = true,
-            Ok(Op::PushToCommand { command, char }) => {
-                self.mode = Mode::CommandLine {
-                    command: format!("{command}{char}"),
-                };
+            Ok(Op::PushToCommand { mut command, char }) => {
+                command.push(char);
+                self.mode = Mode::CommandLine { command };
                 self.error = None;
             }
             Ok(Op::PopFromCommand { mut command }) => {

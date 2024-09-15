@@ -11,7 +11,7 @@ impl fmt::Display for Mode {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum Mode {
     Normal,
     Insert,

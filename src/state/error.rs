@@ -16,7 +16,6 @@ impl fmt::Display for OpError {
     }
 }
 
-#[derive(Clone)]
 pub enum OpError {
     InvalidCommandError { command: String },
     UnknownKeyCodeError { code: KeyCode },

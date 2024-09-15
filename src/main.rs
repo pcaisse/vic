@@ -4,7 +4,7 @@ use crossterm::{
     ExecutableCommand,
 };
 use ratatui::{
-    prelude::{Constraint, CrosstermBackend, Direction, Layout, Stylize, Terminal},
+    prelude::{Constraint, CrosstermBackend, Direction, Layout, Stylize, Terminal, Text},
     widgets::{Block, Borders, Paragraph},
 };
 use std::io::{stdout, Result as ResultIO};
@@ -28,10 +28,10 @@ fn main() -> ResultIO<()> {
         terminal.draw(|frame| {
             let area = frame.size();
 
-            let msg_text = match (editor_state.mode.clone(), editor_state.error.clone()) {
+            let msg_text = match (&editor_state.mode, &editor_state.error) {
                 (_, Some(error)) => Paragraph::new(error.to_string()).red(),
                 (Mode::CommandLine { command }, None) => {
-                    Paragraph::new([":", command.clone().as_str()].join("")).white()
+                    Paragraph::new([":", command].join("")).white()
                 }
                 _ => Paragraph::new(String::new()).white(),
             };
@@ -41,7 +41,7 @@ fn main() -> ResultIO<()> {
                 .constraints(vec![Constraint::Percentage(100), Constraint::Min(2)])
                 .split(area);
             frame.render_widget(
-                Paragraph::new(editor_state.buffer.clone())
+                Paragraph::new(Text::raw(&editor_state.buffer))
                     .white()
                     .on_black(),
                 layout[0],
@@ -50,7 +50,7 @@ fn main() -> ResultIO<()> {
                 msg_text.block(
                     Block::new()
                         .borders(Borders::TOP)
-                        .title(editor_state.mode.clone().to_string()),
+                        .title(editor_state.mode.to_string()),
                 ),
                 layout[1],
             );
