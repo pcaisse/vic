@@ -88,7 +88,9 @@ impl EditorState {
                 self.mode = Mode::CommandLine { command };
                 self.error = None;
             }
-            Ok(Op::PushToBuffer { char }) => self.buffer.text.push(char),
+            Ok(Op::PushToBuffer { char }) => {
+                self.buffer.append(char);
+            }
             Err(error) => {
                 self.error = Some(error);
                 self.mode = Mode::Normal;
