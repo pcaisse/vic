@@ -1,4 +1,5 @@
 use crossterm::{
+    cursor::SetCursorStyle,
     event::{self, Event, KeyEvent},
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
     ExecutableCommand,
@@ -24,6 +25,11 @@ fn main() -> ResultIO<()> {
     };
 
     loop {
+        let cursor_style = match &editor_state.mode {
+            Mode::Insert => SetCursorStyle::SteadyBar,
+            _ => SetCursorStyle::DefaultUserShape,
+        };
+        stdout().execute(cursor_style)?;
         // Draw text buffer
         terminal.draw(|frame| {
             let area = frame.size();
@@ -40,12 +46,10 @@ fn main() -> ResultIO<()> {
                 .direction(Direction::Vertical)
                 .constraints(vec![Constraint::Percentage(100), Constraint::Min(2)])
                 .split(area);
-            frame.render_widget(
-                Paragraph::new(Text::raw(&editor_state.buffer.text))
-                    .white()
-                    .on_black(),
-                layout[0],
-            );
+            let main_text = Paragraph::new(Text::raw(&editor_state.buffer.text))
+                .white()
+                .on_black();
+            frame.render_widget(main_text, layout[0]);
             frame.render_widget(
                 msg_text.block(
                     Block::new()
@@ -54,6 +58,9 @@ fn main() -> ResultIO<()> {
                 ),
                 layout[1],
             );
+
+            let cursor_index = u16::try_from(editor_state.buffer.grapheme_index).unwrap();
+            frame.set_cursor(cursor_index % area.width, cursor_index / area.width);
         })?;
         if event::poll(std::time::Duration::from_millis(16))? {
             if let Event::Key(KeyEvent { code, .. }) = event::read()? {

@@ -10,7 +10,7 @@ fn is_whitespace_str(s: &str) -> bool {
 // (1, "i") (2, " ")
 // (2, " ") (3, "t")
 
-pub fn big_word(s: &str, i: usize) -> (usize, &str) {
+pub fn big_word(s: &str, i: usize) -> usize {
     let iter = s[i..].grapheme_indices(true);
     let (_current, next): (Vec<_>, Vec<_>) = iter
         .tuple_windows()
@@ -20,5 +20,5 @@ pub fn big_word(s: &str, i: usize) -> (usize, &str) {
         .unzip();
     let (indices, _graphemes): (Vec<usize>, Vec<&str>) = next.into_iter().unzip();
     let index = indices.into_iter().max().unwrap_or_default();
-    (i + index, &s[i..index])
+    i + index
 }

@@ -16,6 +16,7 @@ enum Op {
     PushToCommand { command: String, char: char },
     PopFromCommand { command: String },
     PushToBuffer { char: char },
+    MoveBigWordForward,
 }
 
 fn next_op(mode: &Mode, code: KeyCode) -> Result<Op, OpError> {
@@ -43,6 +44,8 @@ fn next_op(mode: &Mode, code: KeyCode) -> Result<Op, OpError> {
                 })
             }
         }
+        // Move forwards one bigword
+        (Mode::Normal, KeyCode::Char('W')) => Ok(Op::MoveBigWordForward),
         // Exit insert or command line mode
         (Mode::Insert | Mode::CommandLine { .. }, KeyCode::Esc) => Ok(Op::EnterNormalMode),
         // Append to text buffer
@@ -76,6 +79,7 @@ impl EditorState {
             Ok(Op::EnterNormalMode) => {
                 self.mode = Mode::Normal;
                 self.error = None;
+                self.buffer.grapheme_index -= 1;
             }
             Ok(Op::Quit) => self.quit = true,
             Ok(Op::PushToCommand { mut command, char }) => {
@@ -87,6 +91,9 @@ impl EditorState {
                 command.pop();
                 self.mode = Mode::CommandLine { command };
                 self.error = None;
+            }
+            Ok(Op::MoveBigWordForward) => {
+                self.buffer.move_big_word_forwards();
             }
             Ok(Op::PushToBuffer { char }) => {
                 self.buffer.append(char);
