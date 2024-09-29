@@ -10,6 +10,7 @@ use crossterm::event::KeyCode;
 enum Op {
     EnterCommandMode,
     EnterInsertMode,
+    EnterInsertModeAppend,
     EnterNormalMode,
     Quit,
     // TODO: Make these chars into strings to accomodate eg. copy/pasting
@@ -26,6 +27,7 @@ fn next_op(mode: &Mode, code: KeyCode) -> Result<Op, OpError> {
         (Mode::Normal, KeyCode::Char(':')) => Ok(Op::EnterCommandMode),
         // Enter into insert mode
         (Mode::Normal, KeyCode::Char('i')) => Ok(Op::EnterInsertMode),
+        (Mode::Normal, KeyCode::Char('a')) => Ok(Op::EnterInsertModeAppend),
         // Add to current command
         (Mode::CommandLine { command }, KeyCode::Char(c)) => Ok(Op::PushToCommand {
             command: command.to_owned(),
@@ -51,7 +53,7 @@ fn next_op(mode: &Mode, code: KeyCode) -> Result<Op, OpError> {
         (Mode::Normal, KeyCode::Char('B')) => Ok(Op::MoveBigWordBackward),
         // Exit insert or command line mode
         (Mode::Insert | Mode::CommandLine { .. }, KeyCode::Esc) => Ok(Op::EnterNormalMode),
-        // Append to text buffer
+        // Insert char
         (Mode::Insert, KeyCode::Char(c)) => Ok(Op::Insert { char: c }),
         (_, code) => Err(OpError::UnknownKeyCodeError { code }),
     }
@@ -73,6 +75,15 @@ impl EditorState {
                 self.mode = Mode::CommandLine {
                     command: String::new(),
                 };
+                self.error = None;
+            }
+            Ok(Op::EnterInsertModeAppend) => {
+                self.mode = Mode::Insert;
+                if !self.buffer.text.is_empty()
+                    && self.buffer.grapheme_index < self.buffer.text.len()
+                {
+                    self.buffer.grapheme_index += 1;
+                }
                 self.error = None;
             }
             Ok(Op::EnterInsertMode) => {
