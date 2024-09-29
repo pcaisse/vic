@@ -1,6 +1,6 @@
 pub mod motions;
 
-use self::motions::big_word;
+use self::motions::{big_word_backwards, big_word_forwards};
 
 #[derive(Default)]
 pub struct Buffer {
@@ -15,7 +15,12 @@ impl Buffer {
     }
 
     pub fn move_big_word_forwards(&mut self) {
-        let new_index = big_word(&self.text, self.grapheme_index);
+        let new_index = big_word_forwards(&self.text, self.grapheme_index);
+        self.grapheme_index = new_index;
+    }
+
+    pub fn move_big_word_backwards(&mut self) {
+        let new_index = big_word_backwards(&self.text, self.grapheme_index);
         self.grapheme_index = new_index;
     }
 }

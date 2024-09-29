@@ -17,6 +17,7 @@ enum Op {
     PopFromCommand { command: String },
     PushToBuffer { char: char },
     MoveBigWordForward,
+    MoveBigWordBackward,
 }
 
 fn next_op(mode: &Mode, code: KeyCode) -> Result<Op, OpError> {
@@ -46,6 +47,8 @@ fn next_op(mode: &Mode, code: KeyCode) -> Result<Op, OpError> {
         }
         // Move forwards one bigword
         (Mode::Normal, KeyCode::Char('W')) => Ok(Op::MoveBigWordForward),
+        // Move backwards one bigword
+        (Mode::Normal, KeyCode::Char('B')) => Ok(Op::MoveBigWordBackward),
         // Exit insert or command line mode
         (Mode::Insert | Mode::CommandLine { .. }, KeyCode::Esc) => Ok(Op::EnterNormalMode),
         // Append to text buffer
@@ -94,6 +97,9 @@ impl EditorState {
             }
             Ok(Op::MoveBigWordForward) => {
                 self.buffer.move_big_word_forwards();
+            }
+            Ok(Op::MoveBigWordBackward) => {
+                self.buffer.move_big_word_backwards();
             }
             Ok(Op::PushToBuffer { char }) => {
                 self.buffer.append(char);
