@@ -15,7 +15,7 @@ enum Op {
     // TODO: Make these chars into strings to accomodate eg. copy/pasting
     PushToCommand { command: String, char: char },
     PopFromCommand { command: String },
-    PushToBuffer { char: char },
+    Insert { char: char },
     MoveBigWordForward,
     MoveBigWordBackward,
 }
@@ -52,7 +52,7 @@ fn next_op(mode: &Mode, code: KeyCode) -> Result<Op, OpError> {
         // Exit insert or command line mode
         (Mode::Insert | Mode::CommandLine { .. }, KeyCode::Esc) => Ok(Op::EnterNormalMode),
         // Append to text buffer
-        (Mode::Insert, KeyCode::Char(c)) => Ok(Op::PushToBuffer { char: c }),
+        (Mode::Insert, KeyCode::Char(c)) => Ok(Op::Insert { char: c }),
         (_, code) => Err(OpError::UnknownKeyCodeError { code }),
     }
 }
@@ -101,8 +101,8 @@ impl EditorState {
             Ok(Op::MoveBigWordBackward) => {
                 self.buffer.move_big_word_backwards();
             }
-            Ok(Op::PushToBuffer { char }) => {
-                self.buffer.append(char);
+            Ok(Op::Insert { char }) => {
+                self.buffer.insert(char);
             }
             Err(error) => {
                 self.error = Some(error);

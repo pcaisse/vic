@@ -1,6 +1,16 @@
 use state::buffer::Buffer;
 
 #[test]
+fn test_insert() {
+    let mut buffer = Buffer {
+        text: String::from("foo bar"),
+        grapheme_index: 3,
+    };
+    buffer.insert('s');
+    assert_eq!(buffer.text, "foos bar")
+}
+
+#[test]
 fn test_move_big_word_forwards() {
     let mut buffer = Buffer {
         text: String::from("hi   there"),

@@ -9,8 +9,8 @@ pub struct Buffer {
 }
 
 impl Buffer {
-    pub fn append(&mut self, c: char) {
-        self.text.push(c);
+    pub fn insert(&mut self, c: char) {
+        self.text.insert(self.grapheme_index, c);
         self.grapheme_index += 1;
     }
 
